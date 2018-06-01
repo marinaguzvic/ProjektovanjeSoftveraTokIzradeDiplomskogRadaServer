@@ -14,15 +14,9 @@ import rs.ac.bgfon.silab.server.db.DatabaseRepository;
  *
  * @author MARINA
  */
-public class SOFindChildren {
+public class SOFindChildren extends AbstractGenericSO{
+    @Override
     public ResultSet execute(GeneralDObject gdo) throws Exception {
-        try {
-            ResultSet rs = DatabaseRepository.getInstance().findRecordsByWhereCondition(gdo,((CompundDObject)gdo).getWhere(gdo.getClassName()));
-            DatabaseRepository.getInstance().commitTransaction();
-            return rs;
-        } catch (Exception e) {
-            DatabaseRepository.getInstance().rollbackTransaction();
-            throw new Exception(e.getMessage());
-        }
+        return db.findRecordsByWhereCondition(gdo,((CompundDObject)gdo).getWhere(gdo.getClassName()));
     }
 }

@@ -5,6 +5,7 @@
  */
 package rs.ac.bg.fon.silab.server.logic;
 
+import java.sql.ResultSet;
 import rs.ac.bgfon.silab.server.db.DatabaseRepository;
 import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
 
@@ -12,15 +13,11 @@ import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
  *
  * @author MARINA
  */
-public class SOUpdateRecord {
-    public GeneralDObject execute(GeneralDObject gdo) throws Exception{
-        try {
-            GeneralDObject gdoReturn = DatabaseRepository.getInstance().updateRecordCompound(gdo);
-            DatabaseRepository.getInstance().commitTransaction();
-            return gdoReturn;
-        } catch (Exception ex) {
-            DatabaseRepository.getInstance().rollbackTransaction();
-            throw new Exception("Error saving record " + gdo + "\n" + ex.getMessage());
-        }
+public class SOUpdateRecord extends AbstractGenericSO {
+
+    @Override
+    public ResultSet execute(GeneralDObject gdo) throws Exception {
+        db.updateRecordCompound(gdo);
+        return null;
     }
 }

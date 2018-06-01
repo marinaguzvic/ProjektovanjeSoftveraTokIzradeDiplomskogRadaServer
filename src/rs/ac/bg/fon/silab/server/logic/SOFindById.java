@@ -13,20 +13,13 @@ import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
  *
  * @author MARINA
  */
-public class SOFindById {
+public class SOFindById extends AbstractGenericSO{
 
 
     
 
+    @Override
     public ResultSet execute(GeneralDObject gdo) throws Exception {
-        try {
-            ResultSet rs = DatabaseRepository.getInstance().findRecordByPrimaryKey(gdo);
-            DatabaseRepository.getInstance().commitTransaction();
-            return rs;
-        } catch (Exception e) {
-            e.printStackTrace();
-            DatabaseRepository.getInstance().rollbackTransaction();
-            throw new Exception(e.getMessage());
-        }
+        return db.findRecordByPrimaryKey(gdo);
     }
 }

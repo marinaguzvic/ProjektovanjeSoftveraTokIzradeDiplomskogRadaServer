@@ -18,11 +18,11 @@ import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
  *
  * @author MARINA
  */
-public class SOGenerateBrojIndeksa {
+public class SOGenerateBrojIndeksa extends AbstractGenericSO {
 
-    public GeneralDObject execute(GeneralDObject gdo) throws Exception {
+    public ResultSet execute(GeneralDObject gdo) throws Exception {
         String indexNo = null;
-        ResultSet rs = DatabaseRepository.getInstance().findRecordsByWhereCondition(new DCSkolskaGodina(), Constants.SkolskaGodina.AKTIVNA + "=" + true);
+        ResultSet rs = db.findRecordsByWhereCondition(new DCSkolskaGodina(), Constants.SkolskaGodina.AKTIVNA + "=" + true);
         DCSkolskaGodina skolskaGodina = null;
         if (rs.next()) {
             skolskaGodina = new DCSkolskaGodina(rs.getString(Constants.SkolskaGodina.SKOLSKA_GODINA), true);
@@ -35,25 +35,18 @@ public class SOGenerateBrojIndeksa {
         String lastIndexNo;
         if (rsStudents.last()) {
             lastIndexNo = rsStudents.getString(Constants.Student.BROJ_INDEKSA);
+            String no = lastIndexNo.substring(4);
+            Integer noInt = Integer.parseInt(no);
+            noInt++;
+            String formattedNo = String.format("%04d", noInt);
+            indexNo = years[0] + formattedNo;
+            ((DCStudent) gdo).setBrojIndeksa(indexNo);
         } else {
             indexNo = years[0] + String.format("%04d", 1);
             ((DCStudent) gdo).setBrojIndeksa(indexNo);
-            return gdo;
         }
-        String no = lastIndexNo.substring(4);
-        Integer noInt = Integer.parseInt(no);
-        noInt++;
-        String formattedNo = String.format("%04d", noInt);
-        indexNo = years[0] + formattedNo;
-        ((DCStudent) gdo).setBrojIndeksa(indexNo);
-        try {
-            GeneralDObject gdoReturn = DatabaseRepository.insertRecordCompound(gdo);
-            DatabaseRepository.getInstance().commitTransaction();
-        } catch (Exception ex) {
-            DatabaseRepository.getInstance().rollbackTransaction();
-            ex.printStackTrace();
-            throw new Exception("Error saving record " + gdo + "\n" + ex.getMessage());
-        }
-        return gdo;
+        db.insertRecordCompound(gdo);
+        return null;
+
     }
 }
