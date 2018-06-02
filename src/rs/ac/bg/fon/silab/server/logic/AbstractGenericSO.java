@@ -21,12 +21,13 @@ public abstract class AbstractGenericSO {
         db = DatabaseRepository.getInstance();
     }
 
-    public void templateExecute(GeneralDObject gdo) throws Exception {
+    public ResultSet templateExecute(GeneralDObject gdo) throws Exception {
         try {
             validate(gdo);
             try {
-                execute(gdo);
+                ResultSet rs = execute(gdo);
                 commitTransaction();
+                return rs;
             } catch (Exception e) {
                 rollbackTransaction();
                 throw new Exception(e.getMessage());
