@@ -25,7 +25,7 @@ import rs.ac.bgfon.silab.server.thread.ServerThread;
  *
  * @author MARINA
  */
-public class Controller {
+public class Controller implements rs.ac.bg.fon.silab.server.form.model.Observer{
 
     FServer fServer;
     ServerThread serverThread;
@@ -55,9 +55,8 @@ public class Controller {
 
     public void startServer() throws Exception {
         Properties prop = readProperties();
-        serverThread = new ServerThread(Integer.parseInt(prop.getProperty(Constants.SERVER + "_" + Constants.PORT)), fServer.getjTextAreaStatus());
+        serverThread = new ServerThread(Integer.parseInt(prop.getProperty(Constants.SERVER + "_" + Constants.PORT)), fServer.getjTextAreaStatus(),  this);
         prepareFormFor(FormState.START_SERVER);
-        serverThread.setStm((ServerTableModel) fServer.getjTableUsers().getModel());
         serverThread.start();
     }
 
@@ -103,4 +102,11 @@ public class Controller {
     private void populateTableUsers() {
         fServer.getjTableUsers().setModel(new ServerTableModel(serverThread.getClients()));
     }
+
+    @Override
+    public void updateData() {
+        ((ServerTableModel)fServer.getjTableUsers().getModel()).setData(serverThread.getClients());
+    }
+
+
 }

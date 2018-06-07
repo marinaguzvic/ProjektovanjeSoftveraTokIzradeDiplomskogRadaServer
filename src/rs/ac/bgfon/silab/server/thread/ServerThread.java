@@ -6,42 +6,35 @@
 package rs.ac.bgfon.silab.server.thread;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JTextArea;
-import rs.ac.bg.fon.silab.server.form.model.ServerTableModel;
-import transfer.request.RequestObject;
+import rs.ac.bg.fon.silab.jpa.example1.domain.DCKorisnik;
+import rs.ac.bg.fon.silab.server.form.model.Observable;
+import rs.ac.bg.fon.silab.server.form.model.Observer;
 
 /**
  *
  * @author MARINA
  */
-public class ServerThread extends Thread {
+public class ServerThread extends Thread implements Observable{
 
     ServerSocket serverSocket;
     List<ClientThread> clients;
     JTextArea jTextAreaStatus;
-    ServerTableModel stm;
+    Observer observer;
 
-    public ServerThread(int port,JTextArea jTextAreaStatus) throws IOException {
+    public ServerThread(int port,JTextArea jTextAreaStatus, Observer observer) throws IOException {
+        this.observer = observer;
         this.jTextAreaStatus = jTextAreaStatus;
         serverSocket = new ServerSocket(port);
         clients = new ArrayList<>();
         jTextAreaStatus.append("\nServer started on port: " + port);
     }
+    
 
-    public void setStm(ServerTableModel stm) {
-        this.stm = stm;
-    }
-
-    public void setStmData(){
-        stm.setData(clients);
-    }
     @Override
     public void run() {
         try {
@@ -53,6 +46,7 @@ public class ServerThread extends Thread {
                 client.start();
                 clients.add((ClientThread) client);
                 jTextAreaStatus.append("\nNew client added");
+                notifyObserves();
             }
         } catch (IOException ex) {
             jTextAreaStatus.append("\nServer stopped: " + ex.getMessage());
@@ -71,5 +65,29 @@ public class ServerThread extends Thread {
 
     public List<ClientThread> getClients() {
         return clients;
+    }
+
+    @Override
+    public void notifyObserves() {
+        updateClients();
+        observer.updateData();
+    }
+    
+    public void updateClients(){
+        for (int i = 0; i < clients.size();i++) {
+            if(clients.get(i).isInterrupted()){
+                jTextAreaStatus.append("<" + clients.get(i).getKorisnik() + ">: " + "Disconnected");
+                clients.remove(i);
+            }
+        }
+    }
+
+    boolean isConnected(DCKorisnik korisnikFound) {
+        for (ClientThread client : clients) {
+            if(client.getKorisnik() != null && client.getKorisnik().equals(korisnikFound)){
+                return true;
+            }
+        }
+        return false;
     }
 }

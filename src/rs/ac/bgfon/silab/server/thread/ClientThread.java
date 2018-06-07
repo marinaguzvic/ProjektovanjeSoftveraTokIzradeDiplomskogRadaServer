@@ -64,11 +64,13 @@ public class ClientThread extends Thread {
     JTextArea jTextAreaStatus;
     private LocalTime timeConnected;
     ServerThread server;
-  
-    
-    
 
-    public ClientThread(Socket socket, JTextArea jTextAreaStatus,ServerThread server) throws IOException {
+    public Socket getSocket() {
+        return socket;
+    }
+
+    
+    public ClientThread(Socket socket, JTextArea jTextAreaStatus, ServerThread server) throws IOException {
         this.server = server;
         timeConnected = LocalTime.now();
         this.socket = socket;
@@ -76,34 +78,42 @@ public class ClientThread extends Thread {
     }
 
     public ObjectInputStream getInput() throws IOException {
-        if(input == null)input = new ObjectInputStream(socket.getInputStream());
+        if (input == null) {
+            input = new ObjectInputStream(socket.getInputStream());
+        }
         return input;
     }
 
     public ObjectOutputStream getOutput() throws IOException {
-        if(output == null)output = new ObjectOutputStream(socket.getOutputStream());
+        if (output == null) {
+            output = new ObjectOutputStream(socket.getOutputStream());
+        }
         return output;
     }
-    
-    
 
     @Override
     public void run() {
-        
-        while (!isInterrupted()) {
-            try {
-                request = (RequestObject) getInput().readObject();
-                response = new ResponseObject();
-                processRequest(request);
-                getOutput().writeObject(response);
-                getOutput().flush();
-                setStatus(request, response);
-            } catch (IOException | ClassNotFoundException ex) {
-                ex.printStackTrace();
-            }
+        try {
+            while (!isInterrupted()) {
 
+                try {
+                    request = (RequestObject) getInput().readObject();
+                    response = new ResponseObject();
+                    processRequest(request);
+                    getOutput().writeObject(response);
+                    getOutput().flush();
+                    setStatus(request, response);
+                } catch (ClassNotFoundException ex) {
+                    
+                }
+
+            }
+        } catch (IOException ex) {
+            interrupt();
+            server.notifyObserves();
+            ex.printStackTrace();
         }
-        server.setStmData();
+
     }
 
     private void processRequest(RequestObject request) {
@@ -115,13 +125,18 @@ public class ClientThread extends Thread {
                     ResultSet rs = so.templateExecute((GeneralDObject) request.getData());
                     DCKorisnik korisnikFound = (DCKorisnik) convertResultSetToObject(rs, ((GeneralDObject) request.getData()).getClassName());
                     if (korisnikFound != null) {
+                        if(server.isConnected(korisnikFound)){
+                            throw new Exception("Korisnik " + ((DCKorisnik) request.getData()).getUsername() + " je vec ulogogvan!");
+                        }
                         response.setData(korisnikFound);
                         korisnik = korisnikFound;
-                        server.setStmData();
+                        server.notifyObserves();
                     } else {
                         throw new Exception("Korisnik " + ((DCKorisnik) request.getData()).getUsername() + " nije autentifikovan!");
                     }
-                }else throw new Exception("Until you log in you can't request other operations");
+                } else {
+                    throw new Exception("Until you log in you can't request other operations");
+                }
             }
             switch (request.getOperation()) {
                 case IOperation.SO_SAVE:
@@ -160,10 +175,10 @@ public class ClientThread extends Thread {
                     response.setData(list);
                     break;
                 }
-                case IOperation.LOGOUT:{
+                case IOperation.LOGOUT: {
                     korisnik = null;
                     response.setMessage("Succesfully logged out");
-                    server.setStmData();
+                    server.notifyObserves();
                 }
 
             }
@@ -253,8 +268,6 @@ public class ClientThread extends Thread {
 
     void closeSocket() {
         try {
-            input.close();
-            output.close();
             socket.close();
         } catch (IOException ex) {
         }
@@ -262,7 +275,7 @@ public class ClientThread extends Thread {
 
     private void setStatus(RequestObject request, ResponseObject response) {
         jTextAreaStatus.append("\n");
-        jTextAreaStatus.append("<" + (korisnik == null? "Uknown user " : korisnik.toString()) + ">: requesting operation: " + request.getOperation() + " for object " + request.getData());
+        jTextAreaStatus.append("<" + (korisnik == null ? "Uknown user " : korisnik.toString()) + ">: requesting operation: " + request.getOperation() + " for object " + request.getData());
         jTextAreaStatus.append("\n");
         jTextAreaStatus.append("Response code: " + response.getCode());
         switch (response.getCode()) {

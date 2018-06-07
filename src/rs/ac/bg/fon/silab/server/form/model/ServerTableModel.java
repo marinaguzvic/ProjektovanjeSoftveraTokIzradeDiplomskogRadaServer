@@ -28,17 +28,21 @@ public class ServerTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 2;
+        return 4;
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         ClientThread client = clients.get(rowIndex);
-        switch (rowIndex) {
+        switch (columnIndex) {
             case 0:
-                return client.getKorisnik();
+                return client.getKorisnik() == null? "Unknown user" : client.getKorisnik().getIme() + "_" + client.getKorisnik().getPrezime();
             case 1:
                 return client.getTimeConnected();
+            case 2:
+                return client.getSocket().getInetAddress();
+            case 3: 
+                return client.getSocket().getPort();
             default:
                 return "N/A";
         }
@@ -46,7 +50,7 @@ public class ServerTableModel extends AbstractTableModel {
 
     @Override
     public String getColumnName(int column) {
-        return new String[]{"Klijent","Vreme konektovanja na server"}[column];
+        return new String[]{"Klijent","Vreme konektovanja na server","Address","Port"}[column];
     }
 
 
