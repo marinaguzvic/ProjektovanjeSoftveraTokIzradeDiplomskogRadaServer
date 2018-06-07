@@ -19,4 +19,10 @@ public class SOFindChildren extends AbstractGenericSO{
     public ResultSet execute(GeneralDObject gdo) throws Exception {
         return db.findRecordsByWhereCondition(gdo,((CompundDObject)gdo).getWhere(gdo.getClassName()));
     }
+
+    @Override
+    protected void validate(GeneralDObject gdo) throws Exception {
+    }
+    
+    
 }

@@ -21,4 +21,10 @@ public class SOFindAllRecords extends AbstractGenericSO{
         return db.findAllRecords(gdo);
 
     }
+
+    @Override
+    protected void validate(GeneralDObject gdo) throws Exception {
+    }
+    
+    
 }

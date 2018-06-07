@@ -49,4 +49,10 @@ public class SOGenerateBrojIndeksa extends AbstractGenericSO {
         return null;
 
     }
+
+    @Override
+    protected void validate(GeneralDObject gdo) throws Exception {
+    }
+    
+    
 }

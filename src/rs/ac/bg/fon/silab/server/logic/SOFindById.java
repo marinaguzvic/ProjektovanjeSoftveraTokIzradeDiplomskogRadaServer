@@ -22,4 +22,10 @@ public class SOFindById extends AbstractGenericSO{
     public ResultSet execute(GeneralDObject gdo) throws Exception {
         return db.findRecordByPrimaryKey(gdo);
     }
+
+    @Override
+    protected void validate(GeneralDObject gdo) throws Exception {
+    }
+    
+    
 }

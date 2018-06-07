@@ -18,7 +18,7 @@ public class DatabaseResources {
     Properties properties;
 
     public DatabaseResources() throws Exception {
-        try (FileInputStream fis = new FileInputStream("./resources/database.config")) {
+        try (FileInputStream fis = new FileInputStream(Constants.PATH_TO_CONFIG_FILE)) {
             properties = new Properties();
             properties.load(fis);
         }catch(Exception ex){
@@ -26,17 +26,26 @@ public class DatabaseResources {
         }
 
     }
+
+    public DatabaseResources(Properties properties) {
+        this.properties = properties;
+    }
     
     public String getUrl(){
-        return properties.getProperty(Constants.URL);
+        StringBuilder sb = new StringBuilder();
+        sb.append("jdbc:").append(properties.getProperty(Constants.PROVIDER)).append("://").append(properties.getProperty(Constants.ADDRESS)).append(":").append(properties.getProperty(properties.getProperty(Constants.PROVIDER) + "_" + Constants.PORT)).append("/").append(properties.getProperty(Constants.DATABASE));
+        System.out.println(sb.toString());
+        return sb.toString();
     }
     
     public String getUsername(){
-        return properties.getProperty(Constants.USERNAME);
+        return properties.getProperty(properties.getProperty(Constants.PROVIDER) + "_" + Constants.USERNAME);
     }
     
     public String getPassword(){
-        return properties.getProperty(Constants.PASSWORD);
+        return properties.getProperty(properties.getProperty(Constants.PROVIDER) + "_" + Constants.PASSWORD);
     }
+
+
 
 }

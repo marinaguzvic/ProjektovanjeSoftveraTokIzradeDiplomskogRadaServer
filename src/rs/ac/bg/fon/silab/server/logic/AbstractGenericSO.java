@@ -37,7 +37,7 @@ public abstract class AbstractGenericSO {
         }
     }
 
-    private void validate(GeneralDObject gdo) throws Exception {
+    protected void validate(GeneralDObject gdo) throws Exception {
         //ako je select, redefinisemo validate, jer za select se validate ne radi
         gdo.checkConstraints();
         checkUnique(gdo);
@@ -57,6 +57,6 @@ public abstract class AbstractGenericSO {
         //gdo implementira metodu vrati kolone koje su unique
         //iz database repo uzimamo sve recorde 
         //proveravamo da li je unique vrednost
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

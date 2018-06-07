@@ -7,6 +7,7 @@ package rs.ac.bgfon.silab.server.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  *
@@ -19,6 +20,7 @@ public class DatabaseConnection {
     private DatabaseConnection() throws Exception {
         
         try {
+            
             DatabaseResources dbr = new DatabaseResources();
             connection = DriverManager.getConnection(dbr.getUrl(), dbr.getUsername(), dbr.getPassword());
             connection.setAutoCommit(false);
@@ -38,6 +40,8 @@ public class DatabaseConnection {
         }
         return instance;
     }
+
+
     
     
 }

@@ -12,16 +12,19 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.ResultSet;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextArea;
 import jdk.nashorn.internal.ir.RuntimeNode;
 import rs.ac.bg.fon.silab.constants.Constants;
 import rs.ac.bg.fon.silab.jpa.example1.domain.CompundDObject;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCClanKomisije;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCDiplomskiRad;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCKomisija;
+import rs.ac.bg.fon.silab.jpa.example1.domain.DCKorisnik;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCNastavnik;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCPredmet;
 import rs.ac.bg.fon.silab.jpa.example1.domain.DCStudent;
@@ -32,6 +35,7 @@ import rs.ac.bg.fon.silab.jpa.example1.domain.EUlogaClanaKomisije;
 import rs.ac.bg.fon.silab.jpa.example1.domain.EZvanje;
 import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
 import rs.ac.bg.fon.silab.server.controller.Controller;
+import rs.ac.bg.fon.silab.server.form.model.ServerTableModel;
 import rs.ac.bg.fon.silab.server.logic.AbstractGenericSO;
 import rs.ac.bg.fon.silab.server.logic.SOFindAllRecords;
 import rs.ac.bg.fon.silab.server.logic.SOFindById;
@@ -56,31 +60,69 @@ public class ClientThread extends Thread {
     RequestObject request;
     ResponseObject response;
     AbstractGenericSO so;
+    private DCKorisnik korisnik;
+    JTextArea jTextAreaStatus;
+    private LocalTime timeConnected;
+    ServerThread server;
+  
+    
+    
 
-    public ClientThread(Socket socket) throws IOException {
+    public ClientThread(Socket socket, JTextArea jTextAreaStatus,ServerThread server) throws IOException {
+        this.server = server;
+        timeConnected = LocalTime.now();
         this.socket = socket;
-        input = new ObjectInputStream(socket.getInputStream());
-        output = new ObjectOutputStream(socket.getOutputStream());
+        this.jTextAreaStatus = jTextAreaStatus;
     }
+
+    public ObjectInputStream getInput() throws IOException {
+        if(input == null)input = new ObjectInputStream(socket.getInputStream());
+        return input;
+    }
+
+    public ObjectOutputStream getOutput() throws IOException {
+        if(output == null)output = new ObjectOutputStream(socket.getOutputStream());
+        return output;
+    }
+    
+    
 
     @Override
     public void run() {
+        
         while (!isInterrupted()) {
             try {
-                request = (RequestObject) input.readObject();
+                request = (RequestObject) getInput().readObject();
                 response = new ResponseObject();
                 processRequest(request);
-                output.writeObject(response);
-                output.flush();
+                getOutput().writeObject(response);
+                getOutput().flush();
+                setStatus(request, response);
             } catch (IOException | ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
 
         }
+        server.setStmData();
     }
 
     private void processRequest(RequestObject request) {
+
         try {
+            if (korisnik == null) {
+                if (request.getOperation().equals(IOperation.LOGIN)) {
+                    so = new SOFindById();
+                    ResultSet rs = so.templateExecute((GeneralDObject) request.getData());
+                    DCKorisnik korisnikFound = (DCKorisnik) convertResultSetToObject(rs, ((GeneralDObject) request.getData()).getClassName());
+                    if (korisnikFound != null) {
+                        response.setData(korisnikFound);
+                        korisnik = korisnikFound;
+                        server.setStmData();
+                    } else {
+                        throw new Exception("Korisnik " + ((DCKorisnik) request.getData()).getUsername() + " nije autentifikovan!");
+                    }
+                }else throw new Exception("Until you log in you can't request other operations");
+            }
             switch (request.getOperation()) {
                 case IOperation.SO_SAVE:
                     so = new SOSaveRecord();
@@ -118,7 +160,12 @@ public class ClientThread extends Thread {
                     response.setData(list);
                     break;
                 }
-                
+                case IOperation.LOGOUT:{
+                    korisnik = null;
+                    response.setMessage("Succesfully logged out");
+                    server.setStmData();
+                }
+
             }
             response.setCode(IStatus.OK);
         } catch (Exception e) {
@@ -167,6 +214,8 @@ public class ClientThread extends Thread {
                     so = new SOFindById();
                     DCPredmet predmet = (DCPredmet) convertResultSetToObject(so.templateExecute(gdo), gdo.getClassName());
                     return new DCTemaDiplomskogRada(rs.getLong(Constants.TemaDiplomskogRada.TEMA_ID), rs.getString(Constants.TemaDiplomskogRada.NAZIV_TEME), rs.getString(Constants.TemaDiplomskogRada.OPIS_TEME), predmet);
+                case Constants.Korisnik.CLASS_NAME:
+                    return new DCKorisnik(rs.getString(Constants.Korisnik.USERNAME), rs.getString(Constants.Korisnik.PASSWORD).toCharArray(), rs.getString(Constants.Korisnik.IME), rs.getString(Constants.Korisnik.PREZIME));
                 default:
                     return null;
             }
@@ -200,5 +249,37 @@ public class ClientThread extends Thread {
 
         }
 
+    }
+
+    void closeSocket() {
+        try {
+            input.close();
+            output.close();
+            socket.close();
+        } catch (IOException ex) {
+        }
+    }
+
+    private void setStatus(RequestObject request, ResponseObject response) {
+        jTextAreaStatus.append("\n");
+        jTextAreaStatus.append("<" + (korisnik == null? "Uknown user " : korisnik.toString()) + ">: requesting operation: " + request.getOperation() + " for object " + request.getData());
+        jTextAreaStatus.append("\n");
+        jTextAreaStatus.append("Response code: " + response.getCode());
+        switch (response.getCode()) {
+            case IStatus.ERROR:
+                jTextAreaStatus.append("\tERROR: " + response.getMessage());
+                break;
+            case IStatus.OK:
+                jTextAreaStatus.append("\tSUCCESS");
+                break;
+        }
+    }
+
+    public DCKorisnik getKorisnik() {
+        return korisnik;
+    }
+
+    public LocalTime getTimeConnected() {
+        return timeConnected;
     }
 }
