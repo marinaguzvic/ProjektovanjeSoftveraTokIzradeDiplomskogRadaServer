@@ -5,6 +5,7 @@
  */
 package rs.ac.bg.fon.silab.server.controller;
 
+import rs.ac.bg.fion.silab.gui.controller.general.ConfigController;
 import java.awt.Frame;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

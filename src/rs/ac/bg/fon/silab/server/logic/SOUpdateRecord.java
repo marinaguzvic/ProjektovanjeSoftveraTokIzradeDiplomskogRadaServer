@@ -6,6 +6,9 @@
 package rs.ac.bg.fon.silab.server.logic;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import rs.ac.bgfon.silab.server.db.DatabaseRepository;
 import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
 
@@ -20,4 +23,19 @@ public class SOUpdateRecord extends AbstractGenericSO {
         db.updateRecordCompound(gdo);
         return null;
     }
+
+    @Override
+    protected boolean sameRecord(ResultSet rs, GeneralDObject gdo) {
+        boolean same = true;
+        for (String primaryKeyColumn : gdo.getPrimaryKeyColumns()) {
+            try {
+                same = same && gdo.getValue(primaryKeyColumn).equals(rs.getObject(primaryKeyColumn));
+            } catch (SQLException ex) {
+                System.out.println("Exception in sameRecord");
+                ex.printStackTrace();
+            }
+        }
+        return same;
+    }
+
 }

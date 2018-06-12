@@ -38,7 +38,9 @@ public class FServer extends javax.swing.JFrame {
         jMenuConfig = new javax.swing.JMenu();
         jMenuItemDatabase = new javax.swing.JMenuItem();
         jMenuItemPort = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        jMenuUser = new javax.swing.JMenu();
+        jMenuItemUserNew = new javax.swing.JMenuItem();
+        jMenuItemUserEdit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -89,8 +91,15 @@ public class FServer extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenuConfig);
 
-        jMenu2.setText("Edit");
-        jMenuBar1.add(jMenu2);
+        jMenuUser.setText("User");
+
+        jMenuItemUserNew.setText("New");
+        jMenuUser.add(jMenuItemUserNew);
+
+        jMenuItemUserEdit.setText("Edit");
+        jMenuUser.add(jMenuItemUserEdit);
+
+        jMenuBar1.add(jMenuUser);
 
         setJMenuBar(jMenuBar1);
 
@@ -132,11 +141,13 @@ public class FServer extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBtnStart;
     private javax.swing.JButton jBtnStop;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenu jMenuConfig;
     private javax.swing.JMenuItem jMenuItemDatabase;
     private javax.swing.JMenuItem jMenuItemPort;
+    private javax.swing.JMenuItem jMenuItemUserEdit;
+    private javax.swing.JMenuItem jMenuItemUserNew;
+    private javax.swing.JMenu jMenuUser;
     private javax.swing.JPanel jPanelUsers;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -178,6 +189,18 @@ public class FServer extends javax.swing.JFrame {
 
     public javax.swing.JTextArea getjTextAreaStatus() {
         return jTextAreaStatus;
+    }
+
+    public javax.swing.JMenuBar getjMenuBar1() {
+        return jMenuBar1;
+    }
+
+    public javax.swing.JMenuItem getjMenuItemUserEdit() {
+        return jMenuItemUserEdit;
+    }
+
+    public javax.swing.JMenuItem getjMenuItemUserNew() {
+        return jMenuItemUserNew;
     }
     
     

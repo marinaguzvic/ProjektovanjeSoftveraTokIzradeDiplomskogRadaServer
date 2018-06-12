@@ -69,7 +69,6 @@ public class ClientThread extends Thread {
         return socket;
     }
 
-    
     public ClientThread(Socket socket, JTextArea jTextAreaStatus, ServerThread server) throws IOException {
         this.server = server;
         timeConnected = LocalTime.now();
@@ -103,8 +102,10 @@ public class ClientThread extends Thread {
                     getOutput().writeObject(response);
                     getOutput().flush();
                     setStatus(request, response);
+                    request = null;
+                    response = null;
                 } catch (ClassNotFoundException ex) {
-                    
+                    ex.printStackTrace();
                 }
 
             }
@@ -125,7 +126,7 @@ public class ClientThread extends Thread {
                     ResultSet rs = so.templateExecute((GeneralDObject) request.getData());
                     DCKorisnik korisnikFound = (DCKorisnik) convertResultSetToObject(rs, ((GeneralDObject) request.getData()).getClassName());
                     if (korisnikFound != null) {
-                        if(server.isConnected(korisnikFound)){
+                        if (server.isConnected(korisnikFound)) {
                             throw new Exception("Korisnik " + ((DCKorisnik) request.getData()).getUsername() + " je vec ulogogvan!");
                         }
                         response.setData(korisnikFound);
@@ -160,7 +161,7 @@ public class ClientThread extends Thread {
                 case IOperation.SO_FIND_BY_ID: {
                     so = new SOFindById();
                     ResultSet rs = so.templateExecute((GeneralDObject) request.getData());
-                    GeneralDObject gdo = convertResultSetToObject(rs, (String) request.getData());
+                    GeneralDObject gdo = convertResultSetToObject(rs, ((GeneralDObject) request.getData()).getClassName());
                     response.setData(gdo);
                     break;
                 }
@@ -197,7 +198,7 @@ public class ClientThread extends Thread {
                     DCKomisija komisija = new DCKomisija(rs.getLong(Constants.DiplomskiRad.KOMISIJA_ID_FK));
                     List<GeneralDObject> gdos = new ArrayList<>();
                     so = new SOFindChildren();
-                    findChildren(so.templateExecute(komisija), komisija, gdos);
+                    findChildren(komisija, gdos);
                     for (GeneralDObject gdo1 : gdos) {
                         komisija.getClanovi().add((DCClanKomisije) gdo1);
                     }
@@ -212,7 +213,7 @@ public class ClientThread extends Thread {
                     DCKomisija komisija = new DCKomisija(rs.getLong(Constants.DiplomskiRad.KOMISIJA_ID_FK));
                     List<GeneralDObject> gdos = new ArrayList<>();
                     so = new SOFindChildren();
-                    findChildren(so.templateExecute(komisija), komisija, gdos);
+                    findChildren(komisija, gdos);
                     for (GeneralDObject gdo1 : gdos) {
                         komisija.getClanovi().add((DCClanKomisije) gdo1);
                     }
@@ -255,9 +256,10 @@ public class ClientThread extends Thread {
         }
     }
 
-    public void findChildren(ResultSet rs, CompundDObject cdo, List<GeneralDObject> list) throws Exception {
+    public void findChildren(CompundDObject cdo, List<GeneralDObject> list) throws Exception {
         for (String className : cdo.classNames()) {
-            GeneralDObject gdo;
+            GeneralDObject gdo = cdo.createChild(className);
+            ResultSet rs = so.templateExecute(gdo);
             while ((gdo = convertResultSetToObject(rs, cdo, className)) != null) {
                 list.add(gdo);
             }
@@ -286,6 +288,7 @@ public class ClientThread extends Thread {
                 jTextAreaStatus.append("\tSUCCESS");
                 break;
         }
+
     }
 
     public DCKorisnik getKorisnik() {

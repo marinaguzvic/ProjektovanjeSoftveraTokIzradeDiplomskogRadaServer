@@ -7,7 +7,7 @@ package rs.ac.bg.fon.silab.server.listener.config;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import rs.ac.bg.fon.silab.server.controller.ConfigController;
+import rs.ac.bg.fion.silab.gui.controller.general.ConfigController;
 import rs.ac.bg.fon.silab.server.controller.DatabaseConfigController;
 
 /**

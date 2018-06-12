@@ -53,10 +53,25 @@ public abstract class AbstractGenericSO {
         db.rollbackTransaction();
     }
 
-    protected void checkUnique(GeneralDObject gdo) {
-        //gdo implementira metodu vrati kolone koje su unique
+    protected void checkUnique(GeneralDObject gdo) throws Exception {
+        if (gdo.returnUniqueColumns().length != 0) {
+            ResultSet rs = db.findAllRecords(gdo);
+            while (rs.next()) {
+                if (!sameRecord(rs,gdo)) {
+                    for (String column : gdo.returnUniqueColumns()) {
+                        if (rs.getObject(column).equals(gdo.getValue(column))) {
+                            throw new Exception("Column " + column + " is not unique in database");
+                        }
+                    }
+                }
+            }
+        }
         //iz database repo uzimamo sve recorde 
         //proveravamo da li je unique vrednost
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    protected boolean sameRecord(ResultSet rs,GeneralDObject gdo) {
+        return false;
     }
 }

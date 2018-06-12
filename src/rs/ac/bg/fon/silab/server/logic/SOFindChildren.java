@@ -6,6 +6,7 @@
 package rs.ac.bg.fon.silab.server.logic;
 
 import java.sql.ResultSet;
+import rs.ac.bg.fon.silab.jpa.example1.domain.ChildDObject;
 import rs.ac.bg.fon.silab.jpa.example1.domain.CompundDObject;
 import rs.ac.bg.fon.silab.jpa.example1.domain.GeneralDObject;
 import rs.ac.bgfon.silab.server.db.DatabaseRepository;
@@ -17,7 +18,8 @@ import rs.ac.bgfon.silab.server.db.DatabaseRepository;
 public class SOFindChildren extends AbstractGenericSO{
     @Override
     public ResultSet execute(GeneralDObject gdo) throws Exception {
-        return db.findRecordsByWhereCondition(gdo,((CompundDObject)gdo).getWhere(gdo.getClassName()));
+
+        return db.findRecordsByWhereCondition(gdo,((ChildDObject)gdo).getParentWhere());
     }
 
     @Override

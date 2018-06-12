@@ -18,6 +18,8 @@ import rs.ac.bg.fon.silab.server.form.model.ServerTableModel;
 import rs.ac.bg.fon.silab.server.listener.StartListener;
 import rs.ac.bg.fon.silab.server.listener.StoptListener;
 import rs.ac.bg.fon.silab.server.listener.menu.DatabaseConfigListener;
+import rs.ac.bg.fon.silab.server.listener.menu.UserEditListener;
+import rs.ac.bg.fon.silab.server.listener.menu.UserNewListener;
 import rs.ac.bg.fon.silab.server.logic.AbstractGenericSO;
 import rs.ac.bgfon.silab.server.thread.ServerThread;
 
@@ -49,6 +51,8 @@ public class Controller implements rs.ac.bg.fon.silab.server.form.model.Observer
     private void setLiseners() {
         fServer.getjMenuItemDatabase().addActionListener(new DatabaseConfigListener(this));
         fServer.getjMenuItemPort().addActionListener(new PortListener(this));
+        fServer.getjMenuItemUserNew().addActionListener(new UserNewListener(this));
+        fServer.getjMenuItemUserEdit().addActionListener(new UserEditListener(this));
         fServer.getjBtnStart().addActionListener(new StartListener(this));
         fServer.getjBtnStop().addActionListener(new StoptListener(this));
     }
@@ -107,6 +111,7 @@ public class Controller implements rs.ac.bg.fon.silab.server.form.model.Observer
     public void updateData() {
         ((ServerTableModel)fServer.getjTableUsers().getModel()).setData(serverThread.getClients());
     }
+
 
 
 }
